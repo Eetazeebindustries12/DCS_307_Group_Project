@@ -1,6 +1,9 @@
 from RNG_class import RNG,Stream
 import random
 from math import floor
+from time import perf_counter,sleep
+import logging
+logging.basicConfig(filename = "logging_final_proj.txt",level = 10, filemode = 'w')
 class Location():
     def __init__(self,row,col):
         self._row = row
@@ -23,6 +26,8 @@ class Location():
         self._occupied = True
     def isfull(self):
         return self._occupied
+    def closeness(self,other:'Location'):
+        return self._row-other._row + self._col - other._col
     def __repr__(self):
         return self._fill
 class Setting():
@@ -81,6 +86,37 @@ class Simulation():
                 percent += 1
         cls.susceptible_percent = float(percent/(len(cls.users)))
         return percent/(len(cls.users))
+    def shuffle(cls):
+        user_ord = cls.users.copy()
+        random.shuffle(user_ord)
+        new_list = []
+        while len(user_ord) != 0:
+            person_one = user_ord.pop()
+            #print(person_one)
+            if len(user_ord) == 0:
+                logging.debug(f"User_ord list: {(user_ord)}")
+                new_list.append(person_one)
+                break
+            other_person = person_one.find_nearest(user_ord)
+            logging.debug(f"{other_person}")
+            try:
+                if other_person == None:
+                #logging.debug(f"User_ord list: {()}\n condition: other_person == None")
+                #print(user_ord)
+                    break
+            except: None
+            grub = "#".join(("#"*1000))
+            logging.debug(f"this is the condition that program is working properly \n {grub}")
+            person_one.interact(other_person)
+            other_person.interact(person_one)
+            new_list.append(person_one)
+            new_list.append(other_person)
+        #logging.debug(f"new_list: {new_list} \n cls.users: {cls.users}")
+        cls.users = new_list
+        for i in cls.users:
+            i.set_pos()
+        cls.room.update_repr()
+        return cls.room
 sim = Simulation()
 class User():
     def __init__(self,name,infected:bool = False,susceptible:bool = True):
@@ -93,23 +129,77 @@ class User():
         sim.print_users.append(self.__repr__())
     def __eq__(self,other:'User'):
         return self._infected == other._infected
+    def location_closeness(self,other:'User')->int:
+        #print(other)
+        logging.debug(f"location_closeness function debug\n \
+other._location : {other._location} \n {other}")
+        return self._location.closeness(other._location)
+    def find_nearest(self,user_ord:list)->'User':
+        #logging.debug(f"find_nearest_debug statement \n user_ord: {user_ord}")
+        new_list = [self.location_closeness(i) for i in user_ord]
+        logging.debug(new_list)
+        new_dict = {k:v for (k,v) in zip(new_list,user_ord)}
+        while None in new_list:
+            new_list.remove(None)
+        if len(new_list) == 0:
+            return None
+        val = new_dict[min(new_list)]
+        return val
+    
+
+
+
+
+
+    def interact(self,other:'User'):
+        """_summary_
+
+        Args:
+            other (User): _description_
+        """
+        if not other._susceptible:
+            if not self._infected:
+                self.argue(other)
+            return
+        if self._infected == other._infected:
+            self.cure(other)
+        elif self._infected:
+            if not other._infected:
+                self.argue(other)
+            else:
+                self.convince(other)
+    def convince(self,other:'User'):
+        t = rng.random(1)
+        g = rng.gamma(t,t+.3,1)
+        if g < 0.5:
+            other._susceptible = True
+            other._infected = True
+
+
+
+    def argue(self,other:'User'):
+        """_summary_
+
+        Args:
+            other (User): _description_
+        """
+        t = rng.random(1)
+        g = rng.exponential(t,1)
+        if g>1:
+            other._infected = self._infected
+            other._susceptible = False
+            return
     def cure(self,other:'User'):
         """_summary_
 
         Args:
             other (User): _description_
         """
-        if other._infected:
-            g = random.randint(1,10)
-            if g>9:
-                other._infected = True
-                other._susceptible = False
-                return
-        if not random.randint(1,100000000000000000000000000000000):
-            string += f"g\n"*100000000
-            while True:
-                print(string)
-                string += f"g\n"*100000000
+        t = rng.random(1)
+        g = rng.uniform(0,t,1)
+        if g>0.5:
+            other._susceptible = False
+            return
     def enter(self):
         if sim.room._entry.isfull():
             return
@@ -124,12 +214,13 @@ class User():
             self.set_pos()
         else:
             d._user = self
+            self._location = d
             d._fill = str(int(self._infected))
     def __repr__(self):
-        return f"name: {self._name} | infected: {self._infected} | susceptible: {self._susceptible}"
-
-pete = User("pete",infected=bool(1))
-greep = User("greep")
+        g = f"name: {self._name} | infected: {self._infected} | susceptible: {self._susceptible}"
+        if self._location!= None:
+            g+= f"location: ({self._location._row},{self._location._col})"
+        return g
 def gen_name(length:int):
     stre = chr(random.randint(65,90))
     for i in range(length-1):
@@ -158,13 +249,16 @@ def build_users(user_num:int,infected_rate:float,susceptible_rate:float):
     users = buildname_list(user_num,(4,7))
     for i in range(user_num):
         new_user = User(name = users[i], infected=infected_bool[i],susceptible=susceptible_bool[i])
-build_users(300,0.3,0.9)
-#print(sim)
-print(sim.percent_infected())
-print(sim.percent_susceptible())
-sim.users[1].enter()
-for i in sim.users:
-    i.set_pos()
-#print(sim.users)
-sim.room.update_repr()
-print(sim.room)
+
+
+if __name__ == "__main__":
+    build_users(300,0.3,0.9)
+    for i in sim.users:
+        i.set_pos()
+        sim.room.update_repr()
+    while sim.time < 20:
+        sim.time +=1
+        print(f"infected%: {sim.percent_infected()} | susceptible% :{sim.percent_susceptible()}")
+        g = sim.shuffle()
+        print(sim.room)
+        sleep(1)
