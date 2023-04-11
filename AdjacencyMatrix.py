@@ -73,3 +73,5 @@ class AdjacencyMatrix():
                 self._graph[i[0]][i[1]] = 1
     def __repr__(self):
         return str(self._data_frame)
+if __name__ == "__main__":
+    from User import User
