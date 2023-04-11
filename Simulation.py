@@ -8,7 +8,7 @@ import logging
 import names
 def build_users(user_num:int)->'list[User]':
     user_list = [0]*user_num
-    name_list = [str("gorn") for i in user_list]
+    name_list = [names.get_full_name() for i in user_list]
     for i in range(user_num):
         user_list[i] = User(name_list[i],i)
         logging.debug(name_list[i])
@@ -32,5 +32,4 @@ class Simulation():
         return str(self.graph)
 if __name__ == "__main__":
     sim = Simulation(20)
-    #print(sim)
-    print(names.get_full_name())
+    print(sim)
