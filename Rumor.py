@@ -15,6 +15,12 @@ class Rumor():
         self._function = lambda a,b: 0.99*np.exp(-a*self._sigmoid(b))
         self._propagation_num:int = 1
     def push_rumor(self,other:'User',switch: bool = False):
+        """_summary_
+
+        Args:
+            other (User): _description_
+            switch (bool, optional): _description_. Defaults to False.
+        """
         if not switch: self._history.append(other)
         headline = random.uniform(0.5,1)
         believe = self._function(self._propagation_num,self._level)
