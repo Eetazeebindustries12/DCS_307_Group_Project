@@ -1,3 +1,5 @@
+class Rumor():
+    g = None
 class User():
     """_summary_
     """
@@ -12,6 +14,8 @@ class User():
         self._name = name
         self.index= user_num
         self._connections:list['User'] = []
+    def rumor_spread(self,other:'Rumor')->'Rumor|None':
+        
     def __hash__(self):
         return self.index 
     def __eq__(self,other:'User'):
