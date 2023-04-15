@@ -11,10 +11,31 @@ class User():
         """
         self._name = name
         self.index= user_num
-        self._connections:list['User'] = []
-    def rumor_spread(self,other:'Rumor')->'Rumor|None':
-        print("spread rumor")
+        self.rumor_list: 'list[Rumor]' = []
+        self.connections:list['User'] = []
+    def add_connection(self,other:'User')->None:
+        """_summary_
+
+        Args:
+            other (User): _description_
+        """
+        if other not in self.connections:
+            self.connections.append(other)
+    def rumor_spread(self,other:'Rumor',debug = False)->'Rumor|None':
+        """_summary_
+
+        Args:
+            other (Rumor): _description_
+
+        Returns:
+            Rumor|None: _description_
+        """
+        self.rumor_list.append(other)
+        if debug :print(f"{self._name} believed a new rumor from {other._tellers[0]}")
     def __hash__(self):
         return self.index 
     def __eq__(self,other:'User'):
         return id(self) == id(other)
+    def __repr__(self):
+        connection_print = [i._name for i in self.connections]
+        return f"Name:{self._name}, User#: {self.index}, Connections: {connection_print}"
