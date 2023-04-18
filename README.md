@@ -1,4 +1,4 @@
-# DCS_307_Group_Project
+# Misinformation-Spread-Simulation
 
 The simulation has 4 core data_types:
 edit: scrapped location
