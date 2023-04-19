@@ -86,16 +86,15 @@ class AdjacencyMatrix():
         """_summary_
         """
         val_list = self.generate_connections(shmoney, int_range= int_range)
-        
-        start = perf_counter()
+            
+        #start = perf_counter()
         for i in val_list:
             if isinstance(i,list):
                 for j in i:
                     self._graph[j[0]][j[1]] = 1
             else:
                 self._graph[i[0]][i[1]] = 1
-        end = perf_counter()
-        print(f"shit took: {end-start} seconds")
+        #end = perf_counter()
     def __repr__(self):
         return str(self._data_frame)
 if __name__ == "__main__":

@@ -63,6 +63,7 @@ class Simulation():
     
     """
     def __init__(self,user_num,debug: bool = False,int_range: 'tuple(int)'= (1,3))-> None:
+        self._range = int_range
         start = perf_counter()
         self._users: 'list[User]' = build_users(user_num)
         end = perf_counter()
@@ -73,6 +74,7 @@ class Simulation():
         logging.info(f"\nAdjacency Matrix build time for user#: {user_num}, took {end-start} seconds\n############################################################################################")
         start = perf_counter()
         self.rumor_list: 'list[Rumor]' = []
+        self.user_path_rumor: 'list[LinkedList[User]]' = []
         self.rumor_path_print: 'list[LinkedList[str]]' = []
         self.rumor_path_list: 'list[LinkedList[int]]' = []
         self.rumor_dict = None
@@ -86,6 +88,20 @@ class Simulation():
         self.rumor_list.append(other)
     def pickUsers(self,num_picks:int)->'list[User]':
         return random.choices(self._users,k = num_picks)
+    def printBeliefPercent(self,rumor_num:int)->float:
+        """
+            outputs the percentage of the users that believed the value
+
+        Args:
+            rumor_num (int): which rumor you want the percentage of
+        """
+        believe_num = 0
+        total_users = len(self._users)
+        for i in self._users:
+            if i in self.rumor_list[rumor_num]._tellers:
+                believe_num += 1
+        return believe_num/total_users
+
     def intializeRumorPaths(self):
         """_summary_ 
             builds two lists of linked lists follow the spread of some rumor:
@@ -93,6 +109,7 @@ class Simulation():
             useful analytics tool to track the spread of a rumor through the graph
         """
         for i in self.rumor_list:
+            self.user_path_rumor.append(k for k in i._tellers)
             self.rumor_path_print.append(LinkedList(lst2link([f"[Name: {j._name}| User#: {j.index}]" for j in i._tellers])))
             self.rumor_path_list.append(LinkedList(lst2link([j.index for j in i._tellers])))
         self.rumor_dict = {k:v for (k,v) in zip(self.rumor_list,self.rumor_path_list)}
@@ -117,17 +134,17 @@ if __name__ == "__main__":
     logging.basicConfig(filename='simulation_perf.log', filemode='a',\
                         format='%(name)s - %(levelname)s - %(message)s', level= logging.INFO)
     logging.warning('This will get logged to a file')
-    seed = 1312312312
+    seed = 12312312
     random.seed(seed)
     #user_num is the number of users the simulation initializes, this will affect the program at roughly O(n^3)..
     #mostly because intializing the adjacency matrix runs in O(n^3)
-    user_num = 4000
+    user_num = 2000
     #int_range is the a range for number of connections an user can have
     #current main limiter of range is that when it is too high for a high user_num
     #the rumor propagation function will generally hit recursion depth
     #this is themost critical thing that needs to be addressed,
     #while user_num slows the program down, int_range can crash it
-    int_range = (4,8)
+    int_range = (9,10)
     #rumor_num just the number of rumors that we want to initalize this wil gener
     rumor_num = 20
     logging.info(
@@ -156,4 +173,11 @@ if __name__ == "__main__":
     sim.intializeRumorPaths()
     end = perf_counter()
     logging.info(f"\nTime it took to intialize rumor paths for {rumor_num} rumors: {end- start} seconds\n############################################################################################")
-    print(random.choice(sim.rumor_path_list))
+    print(sim.user_path_rumor[4])
+    print(f"Percentage believers: {round(sim.printBeliefPercent(4),2)}")
+    g = []
+    for i in sim.rumor_list[4]._tellers:
+        if i not in g:
+            g.append(i)
+    print(len(sim.rumor_list[4]._tellers))
+    print(len(g))
