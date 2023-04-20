@@ -27,6 +27,7 @@ class AdjacencyMatrix():
         while not self.adjacency_check():
             adjacency_iters = 0
             for i in range(self._size):
+                #checks whether the matrix is fully connected
                 if not self.row_adjacency_check(i):
                    adjacency_iters +=1
                    val = self.add_connections(i,int_range=int_range)
@@ -45,7 +46,7 @@ class AdjacencyMatrix():
         for i in range(dimension):
             for j in range(dimension):
                 if self._graph[i][j]:
-                    #this is not the self.addConnectionthis is the user class add connection
+                    #this is not the self.addConnection this is the user class add connection
                     user_list[i].add_connection(user_list[j])
         end = perf_counter()
         logging.info(f"\nIntializing connections for {dimension} users: took {end-start} seconds\n############################################################################################")

@@ -9,6 +9,7 @@ import logging
 import names
 from time import perf_counter
 
+
 def build_users(user_num:int)->'list[User]':
     user_list = [0]*user_num
     name_list = [names.get_full_name() for i in user_list]
@@ -64,6 +65,7 @@ class Simulation():
     """
     def __init__(self,user_num,debug: bool = False,int_range: 'tuple(int)'= (1,3))-> None:
         self._range = int_range
+        self._size = user_num
         start = perf_counter()
         self._users: 'list[User]' = build_users(user_num)
         end = perf_counter()
@@ -138,15 +140,15 @@ if __name__ == "__main__":
     random.seed(seed)
     #user_num is the number of users the simulation initializes, this will affect the program at roughly O(n^3)..
     #mostly because intializing the adjacency matrix runs in O(n^3)
-    user_num = 2000
+    user_num = 200
     #int_range is the a range for number of connections an user can have
     #current main limiter of range is that when it is too high for a high user_num
     #the rumor propagation function will generally hit recursion depth
     #this is themost critical thing that needs to be addressed,
     #while user_num slows the program down, int_range can crash it
-    int_range = (9,10)
+    int_range = (2,4)
     #rumor_num just the number of rumors that we want to initalize this wil gener
-    rumor_num = 20
+    rumor_num = 5
     logging.info(
         f"\
 \n############################################################################################\
@@ -173,11 +175,16 @@ if __name__ == "__main__":
     sim.intializeRumorPaths()
     end = perf_counter()
     logging.info(f"\nTime it took to intialize rumor paths for {rumor_num} rumors: {end- start} seconds\n############################################################################################")
-    print(sim.user_path_rumor[4])
+    
+    for i in sim.rumor_path_print:
+        print(i)
     print(f"Percentage believers: {round(sim.printBeliefPercent(4),2)}")
     g = []
     for i in sim.rumor_list[4]._tellers:
         if i not in g:
             g.append(i)
-    print(len(sim.rumor_list[4]._tellers))
-    print(len(g))
+    print(f"Users in rumor: {len(sim.rumor_list[4]._tellers)}")
+    print(f"Unique users: {len(g)}")
+    mondo_rumor = sim.rumor_list[4]
+    print(f"User#: {sim._size} \nBeliever number for rumor 4: {len(mondo_rumor._tellers)}\nNon believer number for rumor 4: {len(mondo_rumor._non_believer)}")
+    print(mondo_rumor)
